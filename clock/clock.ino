@@ -70,7 +70,9 @@ enum {
  CODE_6 = 0xFF5AA5,
  CODE_7 = 0xFF42BD,
  CODE_8 = 0xFF4AB5,
- CODE_9 = 0xFF52AD
+ CODE_9 = 0xFF52AD,
+ CODE_MINUS = 0xFFE01F,
+ CODE_PLUS = 0xFFA857
 };
 
 const int pin_latch =  8;
@@ -79,7 +81,7 @@ const int pin_data  = 11;
 
 const byte code_dot = 0b00001000;
 const byte codes[] = {
-  0b00000000,
+  0b11100111,
   0b10000100,
   0b11010011,
   0b11010110,
@@ -93,31 +95,55 @@ const byte codes[] = {
 
 byte output_old  = codes[0];
 byte output = code_dot;
+int digit = -1;
 
-byte sig_to_output(int sig) {
+byte sig_to_output(int *cur, int sig) {
   switch(sig) {
   case CODE_0:
-    return codes[0];
+    *cur = 0;
+    break;
   case CODE_1:
-    return codes[1];
+    *cur = 1;
+    break;
   case CODE_2:
-    return codes[2];
+    *cur = 2;
+    break;
   case CODE_3:
-    return codes[3];
+    *cur = 3;
+    break;
   case CODE_4:
-    return codes[4];
+    *cur = 4;
+    break;
   case CODE_5:
-    return codes[5];
+    *cur = 5;
+    break;
   case CODE_6:
-    return codes[6];
+    *cur = 6;
+    break;
   case CODE_7:
-    return codes[7];
+    *cur = 7;
+    break;
   case CODE_8:
-    return codes[8];
+    *cur = 8;
+    break;
   case CODE_9:
-    return codes[9];
+    *cur = 9;
+    break;
+  case CODE_MINUS:
+    *cur = (*cur + 9) % 10;
+    break;
+  case CODE_PLUS:
+    *cur = (*cur + 1) % 10;
+    break;
   default:
+    *cur = -1;
+  }
+  
+  if (*cur == -1) {
     return code_dot;
+  }
+  else {
+    return codes[*cur];
   }
 }
 
@@ -138,13 +164,12 @@ void loop() {
     Serial.println(signals.value, HEX);
     irrecv.resume(); // get the next signal
     
-    output = sig_to_output(signals.value);
-    
-    // delay(1000);
+    if (signals.value != 0xFFFFFFFF) {
+      output = sig_to_output(&digit,signals.value);
+    }
   }
 
   if (output != output_old) {
-    Serial.println("writing");
     digitalWrite(pin_latch, 0);
     shiftOut(pin_data, pin_clock, MSBFIRST, output);
     digitalWrite(pin_latch, 1);
