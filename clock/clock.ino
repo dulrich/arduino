@@ -1,11 +1,7 @@
 #include <IRremote.h>
 
-/*  Infrared Remote Controller & IR Receiver demo program
-  copy right John Yu
-  connect VS1838B to  D10 see http://osoyoo.com/?p=144
-*/
-
-/*
+/* Hex IR Codes:
+ *
  * CH- 0xFFA25D
  * CH  0xFF629D
  * CH+ 0xFFE21D
@@ -27,52 +23,23 @@
  *  7  0xFF42BD
  *  8  0xFF4AB5
  *  9  0xFF52AD
- *
- * 1010001001011101
- * 0110001010011101
- * 1110001000011101
- * 0010001011011101
- * 0000001011111101
- * 1100001000111101
- * 1110000000011111
- * 1010100001010111
- * 1001000001101111
- * 0110100010010111
- * 1001100001100111
- * 1011000001001111
- * 0011000011001111
- * 0001100011100111
- * 0111101010000101
- * 0001000011101111
- * 0011100011000111
- * 0101101010100101
- * 0100001010111101
- * 0100101010110101
- * 0101001010101101
- *
- * 1010001001011101 | 0110001010011101 | 1110001000011101
- * 0010001011011101 | 0000001011111101 | 1100001000111101
- * 1110000000011111 | 1010100001010111 | 1001000001101111
- * 0110100010010111 | 1001100001100111 | 1011000001001111
- * 0011000011001111 | 0001100011100111 | 0111101010000101
- * 0001000011101111 | 0011100011000111 | 0101101010100101
- * 0100001010111101 | 0100101010110101 | 0101001010101101
  */
 
 
 enum {
- CODE_0 = 0xFF6897,
- CODE_1 = 0xFF30CF,
- CODE_2 = 0xFF18E7,
- CODE_3 = 0xFF7A85,
- CODE_4 = 0xFF10EF,
- CODE_5 = 0xFF38C7,
- CODE_6 = 0xFF5AA5,
- CODE_7 = 0xFF42BD,
- CODE_8 = 0xFF4AB5,
- CODE_9 = 0xFF52AD,
- CODE_MINUS = 0xFFE01F,
- CODE_PLUS = 0xFFA857
+  CODE_NO_CHANGE = 0xFFFFFFFF,
+  CODE_0 = 0xFF6897,
+  CODE_1 = 0xFF30CF,
+  CODE_2 = 0xFF18E7,
+  CODE_3 = 0xFF7A85,
+  CODE_4 = 0xFF10EF,
+  CODE_5 = 0xFF38C7,
+  CODE_6 = 0xFF5AA5,
+  CODE_7 = 0xFF42BD,
+  CODE_8 = 0xFF4AB5,
+  CODE_9 = 0xFF52AD,
+  CODE_MINUS = 0xFFE01F,
+  CODE_PLUS = 0xFFA857
 };
 
 const int pin_latch =  8;
@@ -130,10 +97,10 @@ byte sig_to_output(int *cur, int sig) {
     *cur = 9;
     break;
   case CODE_MINUS:
-    *cur = (*cur + 9) % 10;
+    if (*cur > -1) *cur = (*cur + 9) % 10;
     break;
   case CODE_PLUS:
-    *cur = (*cur + 1) % 10;
+    if (*cur > -1) *cur = (*cur + 1) % 10;
     break;
   default:
     *cur = -1;
@@ -164,7 +131,7 @@ void loop() {
     Serial.println(signals.value, HEX);
     irrecv.resume(); // get the next signal
     
-    if (signals.value != 0xFFFFFFFF) {
+    if (signals.value != CODE_NO_CHANGE) {
       output = sig_to_output(&digit,signals.value);
     }
   }
