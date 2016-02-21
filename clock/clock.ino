@@ -42,9 +42,20 @@ enum {
   CODE_PLUS = 0xFFA857
 };
 
-const int pin_latch =  8;
-const int pin_clock = 12;
-const int pin_data  = 11;
+const int pin_latch_4 =  2;
+const int pin_clock_4 =  3;
+const int pin_data__4 =  4;
+
+const int pin_digit_1 =  5;
+const int pin_digit_2 =  6;
+const int pin_digit_3 =  7;
+const int pin_digit_4 =  8;
+
+const int pin_latch_1 =  9;
+const int pin_clock_1 = 10;
+const int pin_data__1 = 11;
+
+
 
 const byte code_dot = 0b00001000;
 const byte codes[] = {
@@ -114,14 +125,24 @@ byte sig_to_output(int *cur, int sig) {
   }
 }
 
-int input_pin = 10; //set D10 as input signal pin
-IRrecv irrecv(input_pin);
+const int pin_input = 12; //set D12 as input signal pin
+IRrecv irrecv(pin_input);
 decode_results signals;
 void setup() {
-  pinMode(pin_latch, OUTPUT);
-  pinMode(pin_clock, OUTPUT);
-  pinMode(pin_data, OUTPUT);
+  pinMode(pin_latch_4, OUTPUT);
+  pinMode(pin_clock_4, OUTPUT);
+  pinMode(pin_data__4, OUTPUT);
   
+  pinMode(pin_digit_1, OUTPUT);
+  pinMode(pin_digit_2, OUTPUT);
+  pinMode(pin_digit_3, OUTPUT);
+  pinMode(pin_digit_4, OUTPUT);
+  
+  pinMode(pin_latch_1, OUTPUT);
+  pinMode(pin_clock_1, OUTPUT);
+  pinMode(pin_data__1, OUTPUT);
+  
+  pinMode(pin_input, INPUT);
   Serial.begin(9600);
   irrecv.enableIRIn(); // enable input from IR receiver
 }
@@ -137,9 +158,18 @@ void loop() {
   }
 
   if (output != output_old) {
-    digitalWrite(pin_latch, 0);
-    shiftOut(pin_data, pin_clock, MSBFIRST, output);
-    digitalWrite(pin_latch, 1);
+    //digitalWrite(pin_digit_1, LOW);
+    //digitalWrite(pin_digit_2, LOW);
+    //digitalWrite(pin_digit_3, LOW);
+    //digitalWrite(pin_digit_4, LOW);  
+    
+    //digitalWrite(pin_latch_4, 0);
+    //shiftOut(pin_data__4, pin_clock_4, MSBFIRST, output);
+    //digitalWrite(pin_latch_4, 1);
+    
+    digitalWrite(pin_latch_1, 0);
+    shiftOut(pin_data__1, pin_clock_1, MSBFIRST, output);
+    digitalWrite(pin_latch_1, 1);
     
     output_old = output;
   }
