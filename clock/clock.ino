@@ -43,8 +43,8 @@ enum {
 };
 
 const int pin_latch_4 =  2;
-const int pin_clock_4 =  3;
-const int pin_data__4 =  4;
+const int pin_data__4 =  3;
+const int pin_clock_4 =  4;
 
 const int pin_digit_1 =  5;
 const int pin_digit_2 =  6;
@@ -52,8 +52,8 @@ const int pin_digit_3 =  7;
 const int pin_digit_4 =  8;
 
 const int pin_latch_1 =  9;
-const int pin_clock_1 = 10;
-const int pin_data__1 = 11;
+const int pin_data__1 = 10;
+const int pin_clock_1 = 11;
 
 
 
@@ -158,19 +158,23 @@ void loop() {
   }
 
   if (output != output_old) {
-    //digitalWrite(pin_digit_1, LOW);
-    //digitalWrite(pin_digit_2, LOW);
-    //digitalWrite(pin_digit_3, LOW);
-    //digitalWrite(pin_digit_4, LOW);  
-    
-    //digitalWrite(pin_latch_4, 0);
-    //shiftOut(pin_data__4, pin_clock_4, MSBFIRST, output);
-    //digitalWrite(pin_latch_4, 1);
-    
-    digitalWrite(pin_latch_1, 0);
-    shiftOut(pin_data__1, pin_clock_1, MSBFIRST, output);
-    digitalWrite(pin_latch_1, 1);
+    digitalWrite(pin_digit_1, LOW);
+    digitalWrite(pin_digit_2, LOW);
+    digitalWrite(pin_digit_3, LOW);
+    digitalWrite(pin_digit_4, LOW);
     
     output_old = output;
   }
+  
+  digitalWrite(pin_latch_4, 0);
+  shiftOut(pin_data__4, pin_clock_4, MSBFIRST, output);
+  digitalWrite(pin_latch_4, 1);
+  
+  delay(10);
+  
+  digitalWrite(pin_latch_1, 0);
+  shiftOut(pin_data__1, pin_clock_1, MSBFIRST, output);
+  digitalWrite(pin_latch_1, 1);
+  
+  delay(10);
 }
