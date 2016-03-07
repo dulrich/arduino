@@ -17,3 +17,4 @@
 # references
 
 - [5461AS](http://thomas.bibby.ie/using-the-kyx-5461as-4-digit-7-segment-led-display-with-arduino/)
+- [595 wiring](https://www.arduino.cc/en/Tutorial/ShiftOut)

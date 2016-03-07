@@ -39,17 +39,21 @@ enum {
   CODE_8 = 0xFF4AB5,
   CODE_9 = 0xFF52AD,
   CODE_MINUS = 0xFFE01F,
-  CODE_PLUS = 0xFFA857
+  CODE_PLUS = 0xFFA857,
+  CODE_PREV = 0xFF22DD,
+  CODE_NEXT = 0xFF02FD
 };
 
 const int pin_latch_4 =  2;
 const int pin_data__4 =  3;
 const int pin_clock_4 =  4;
 
-const int pin_digit_1 =  5;
-const int pin_digit_2 =  6;
-const int pin_digit_3 =  7;
-const int pin_digit_4 =  8;
+const int pin_digit[] = {
+  8,
+  5,
+  6,
+  7
+};
 
 const int pin_latch_1 =  9;
 const int pin_data__1 = 10;
@@ -71,9 +75,27 @@ const byte codes[] = {
   0b11110100
 };
 
-byte output_old  = codes[0];
-byte output = code_dot;
-int digit = -1;
+byte output_old[]  = {
+  codes[0],
+  codes[0],
+  codes[0],
+  codes[0],
+  
+  codes[0]
+};
+byte output[] = {
+  code_dot,
+  code_dot,
+  code_dot,
+  code_dot,
+  
+  code_dot
+};
+int digits[] = { -1, -1, -1, -1, -1 };
+
+const int digit_count = 5;
+int digit_active = 0;
+
 
 byte sig_to_output(int *cur, int sig) {
   switch(sig) {
@@ -133,10 +155,10 @@ void setup() {
   pinMode(pin_clock_4, OUTPUT);
   pinMode(pin_data__4, OUTPUT);
   
-  pinMode(pin_digit_1, OUTPUT);
-  pinMode(pin_digit_2, OUTPUT);
-  pinMode(pin_digit_3, OUTPUT);
-  pinMode(pin_digit_4, OUTPUT);
+  pinMode(pin_digit[0], OUTPUT);
+  pinMode(pin_digit[1], OUTPUT);
+  pinMode(pin_digit[2], OUTPUT);
+  pinMode(pin_digit[3], OUTPUT);
   
   pinMode(pin_latch_1, OUTPUT);
   pinMode(pin_clock_1, OUTPUT);
@@ -148,33 +170,53 @@ void setup() {
 }
 
 void loop() {
+  int i = 0;
+  
   if (irrecv.decode(&signals)) {
     Serial.println(signals.value, HEX);
     irrecv.resume(); // get the next signal
     
-    if (signals.value != CODE_NO_CHANGE) {
-      output = sig_to_output(&digit,signals.value);
+    if (signals.value == CODE_PREV) {
+      digit_active = (digit_active + 4) % 5;
+      Serial.print("prev active digit");
+      Serial.println(digit_active, DEC);
+    }
+    else if (signals.value == CODE_NEXT) {
+      digit_active = (digit_active + 1) % 5;
+      Serial.print("next active digit");
+      Serial.println(digit_active, DEC);
+    }
+    else if (signals.value != CODE_NO_CHANGE) {
+      output[digit_active] = sig_to_output(&digits[digit_active],signals.value);
     }
   }
-
-  if (output != output_old) {
-    digitalWrite(pin_digit_1, LOW);
-    digitalWrite(pin_digit_2, LOW);
-    digitalWrite(pin_digit_3, LOW);
-    digitalWrite(pin_digit_4, LOW);
-    
-    output_old = output;
+  
+    digitalWrite(pin_digit[0], HIGH);
+    digitalWrite(pin_digit[1], HIGH);
+    digitalWrite(pin_digit[2], HIGH);
+    digitalWrite(pin_digit[3], HIGH);
+  
+  if (output[digit_active] != output_old[digit_active]) {
+    output_old[digit_active] = output[digit_active];
   }
   
-  digitalWrite(pin_latch_4, 0);
-  shiftOut(pin_data__4, pin_clock_4, MSBFIRST, output);
-  digitalWrite(pin_latch_4, 1);
+  for(i = 0; i < (digit_count - 1 ); i++) {
+    digitalWrite(pin_digit[i], LOW);
+    
+    digitalWrite(pin_latch_4, LOW);
+    shiftOut(pin_data__4, pin_clock_4, MSBFIRST, output[i]);
+    digitalWrite(pin_latch_4, HIGH);
+    
+    digitalWrite(pin_digit[i], HIGH);
+    
+    delay(4);
+  }
   
-  delay(10);
   
   digitalWrite(pin_latch_1, 0);
-  shiftOut(pin_data__1, pin_clock_1, MSBFIRST, output);
+  shiftOut(pin_data__1, pin_clock_1, MSBFIRST, output[4]);
   digitalWrite(pin_latch_1, 1);
   
-  delay(10);
+  delay(1);
 }
+
